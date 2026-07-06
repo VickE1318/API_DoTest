@@ -1,0 +1,26 @@
+---
+
+environment: qa
+
+environments:
+ dev:
+  base_url:
+ qa:
+  base_url:
+ uat:
+  base_url:
+
+settings:
+ timeout: 30
+ verify_ssl: true
+ retries: 2
+ header:
+  Content-Type: application/json
+
+authentication:
+ type: bearer
+ token: ""
+ username: ""
+ password: ""
+
+...
