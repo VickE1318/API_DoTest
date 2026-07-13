@@ -4,16 +4,18 @@ from utilities.logger import setup_logger
 from clients.api_client import APIClient
 
 @pytest.fixture(scope="session")
-def config_caller():
-    config=load_config("config/config.yaml")
-    return config
+def config():
+    config_obj=load_config("config/config.yaml")
+    return config_obj
 
 @pytest.fixture(scope="session")
-def log_caller():
-    logger=setup_logger()
-    return logger
-
-@pytest.fixture(scope="session")
-def client_caller():
-    client_obj = APIClient.request()
+def api_client(config):
+    current_env = config["environment"]
+    base_url=config["environments"][current_env]["base_url"]
+    client_obj = APIClient(base_url)
     return client_obj
+
+@pytest.fixture(scope="session",autouse=True)
+def logger():
+    setup_logger()
+    yield
