@@ -5,8 +5,8 @@ from typing import Any
 def load_config(config_path: str) -> dict[str,Any]:
     try:
         with open(config_path, "r", encoding="utf-8") as file:
-            config = yaml.safe_load(file)
-        return config
+            config_obj = yaml.safe_load(file)
+        return config_obj
     except FileNotFoundError:
         raise FileNotFoundError(f"Error: The file '{config_path}' was not found. Please check the path.")
     except PermissionError:
