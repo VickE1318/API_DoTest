@@ -18,4 +18,3 @@ def api_client(config):
 @pytest.fixture(scope="session",autouse=True)
 def logger():
     setup_logger()
-    yield

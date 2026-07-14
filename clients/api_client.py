@@ -28,15 +28,15 @@ class APIClient:
         except requests.exceptions.RequestException as e:
             logging.error(f"An ambiguous error occurred while handling your request: {e}")
             raise
-    def get_req(self,endpoint,**kwargs):
+    def get(self,endpoint,**kwargs):
         return self.request("GET",endpoint,**kwargs)
-    def post_req(self,endpoint,data,json,**kwargs):
+    def post(self,endpoint,data,json,**kwargs):
         return self.request("POST",endpoint,data=data,json=json,**kwargs)
-    def delete_req(self,endpoint,**kwargs):
+    def delete(self,endpoint,**kwargs):
         return self.request("DELETE",endpoint,**kwargs)
-    def patch_req(self,endpoint,data,**kwargs):
+    def patch(self,endpoint,data,**kwargs):
         return self.request("PATCH",endpoint,data=data,**kwargs)
-    def put_req(self,endpoint,data,**kwargs):
+    def put(self,endpoint,data,**kwargs):
         return self.request("PUT",endpoint,data=data,**kwargs)
         
 
