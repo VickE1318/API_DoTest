@@ -1,17 +1,25 @@
 import yaml
-from pathlib import Path
 from typing import Any
+from utilities.logger import get_logger
+
+logger = get_logger()
 
 def load_config(config_path: str) -> dict[str,Any]:
     try:
         with open(config_path, "r", encoding="utf-8") as file:
+            logger.info(f"Loading configuration: {config_path}")
             config_obj = yaml.safe_load(file)
+            logger.info("Configuration loaded successfully.")
         return config_obj
     except FileNotFoundError:
-        raise FileNotFoundError(f"Error: The file '{config_path}' was not found. Please check the path.")
+        logger.error(f"Error: The file '{config_path}' was not found. Please check the path.")
+        raise
     except PermissionError:
-        raise PermissionError(f"Error: Permission denied when accessing '{config_path}'.")
+        logger.error(f"Error: Permission denied when accessing '{config_path}'.")
+        raise
     except OSError as e:
-        raise OSError(f"OS error occurred: {e}")
+        logger.error(f"OS error occurred: {e}")
+        raise
     except yaml.YAMLError as e:
-        raise ValueError(f"Invalid YAML in configuration file: {config_path}") from e
+        logger.error(f"Invalid YAML in configuration file: {config_path} - {e}") 
+        raise
