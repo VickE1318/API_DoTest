@@ -13,7 +13,6 @@ def load_schema(schema_name: str) -> dict[str,Any]:
             schema_data = json.load(file)
             logger.info("Schema loaded successfully.")
         return schema_data
-    
     except FileNotFoundError:
         logger.error(f"Error: The file '{expected_schema_path}' was not found. Please check the path.")
         raise 
@@ -26,3 +25,8 @@ def load_schema(schema_name: str) -> dict[str,Any]:
     except json.JSONDecodeError as e:
         logger.error(f"Invalid JSON in schema file: {expected_schema_path}")
         raise
+
+def schema_exists(schema_name: str) -> bool:
+    schema_directory = Path("baselines") / "schemas"
+    schema_file_path = schema_directory / f"{schema_name}.json"
+    return schema_file_path.exists()
