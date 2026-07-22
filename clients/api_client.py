@@ -1,7 +1,7 @@
 import requests
 from utilities.logger import get_logger
 from validators.schema_validator import SchemaValidator
-from utilities.schema_loader import load_schema
+from utilities.schema_loader import load_schema,schema_exists
 
 logger = get_logger()
 
@@ -12,14 +12,17 @@ class APIClient:
         self.session = requests.Session()
         self.validator = SchemaValidator()
 
-    def request(self, method, endpoint, expected_schema=None, schema_name=None,**kwargs):
+    def request(self, method, endpoint, expected_schema=None, schema_name=None, auto_generate=False, **kwargs):
         #Load schema
         if expected_schema and schema_name:
             logger.error("Provide either expected_schema or schema_name, not both.")
             raise ValueError("Provide either expected_schema or schema_name, not both.")
         elif schema_name:
-            expected_schema=load_schema(schema_name)
-            logger.info(f"Using baseline schema '{schema_name}'")
+            if schema_exists(schema_name):
+                expected_schema=load_schema(schema_name)
+                logger.info(f"Using baseline schema '{schema_name}'")
+            else:
+                logger.warning(f"Baseline schema '{schema_name}' not found")
         #Endpoint formation
         if not endpoint.startswith('/'):
             endpoint = '/' + endpoint
