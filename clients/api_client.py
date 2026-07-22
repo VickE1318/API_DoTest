@@ -2,6 +2,7 @@ import requests
 from utilities.logger import get_logger
 from validators.schema_validator import SchemaValidator
 from utilities.schema_loader import load_schema,schema_exists
+from generators.schema_generator import SchemaGenerator
 
 logger = get_logger()
 
@@ -11,6 +12,7 @@ class APIClient:
         self.base_url = base_url.rstrip('/')
         self.session = requests.Session()
         self.validator = SchemaValidator()
+        self.generator = SchemaGenerator()
 
     def request(self, method, endpoint, expected_schema=None, schema_name=None, auto_generate=False, **kwargs):
         #Load schema
@@ -23,7 +25,8 @@ class APIClient:
                 logger.info(f"Using baseline schema '{schema_name}'")
             else:
                 logger.warning(f"Baseline schema '{schema_name}' not found")
-        #Endpoint formation
+
+       #Endpoint formation
         if not endpoint.startswith('/'):
             endpoint = '/' + endpoint
         url = self.base_url + endpoint
@@ -33,19 +36,13 @@ class APIClient:
             response.raise_for_status()
             logger.info(f"Status Code: {response.status_code}")
             content_type = response.headers.get("Content-Type", "")
-            if expected_schema is not None:
-                if "application/json" in content_type:
-                    actual_json = response.json()
-                    validation_result = self.validator.validate_data(actual_json,expected_schema) 
-                    if not validation_result["missing"] and not validation_result["added"] and not validation_result["type_changes"]:
-                        logger.info("Schema validation passed")
-                    else:
-                        logger.warning(f"Schema validation failed: {validation_result}")
-                else:
-                    logger.warning("Schema validation skipped. Reason: Response is not JSON.")
+            if "application/json" in content_type:
+                actual_json = response.json()
+                self.validate_response(actual_json=actual_json,expected_schema=expected_schema, schema_name=schema_name,auto_generate=auto_generate)
             else:
-                logger.warning("Schema validation skipped. Reason: No schema provided.")
+                logger.warning("Schema validation skipped. Reason: Response is not JSON.")
             return response
+        
         except requests.exceptions.Timeout as e:
             logger.error(f"Timeout occurred while connecting to {url}: {e}")
             raise
@@ -60,20 +57,36 @@ class APIClient:
             logger.error(f"An ambiguous error occurred while handling your request: {e}")
             raise
 
-    def get(self,endpoint, expected_schema=None,schema_name=None,**kwargs):
-        return self.request("GET",endpoint,expected_schema=expected_schema,schema_name=schema_name,**kwargs)
+    def validate_response(self, actual_json, expected_schema, auto_generate,schema_name):
+        if expected_schema is None and auto_generate and schema_name:
+            expected_schema=self.generator.generate_schema(actual_json)
+            logger.info(f"Generating baseline schema '{schema_name}'")
+            self.generator.save_schema(expected_schema,schema_name)   
+            logger.info(f"Baseline schema '{schema_name}' saved successfully")
+        if  expected_schema is not None:
+            validation_result = self.validator.validate_data(actual_json,expected_schema) 
+            if not validation_result["missing"] and not validation_result["added"] and not validation_result["type_changes"]:
+                logger.info("Schema validation passed")
+            else:
+                logger.warning(f"Schema validation failed: {validation_result}")
+        else:
+            logger.warning("Schema validation skipped. Reason: No schema provided.") 
+
+
+    def get(self,endpoint, expected_schema=None,schema_name=None, auto_generate=False,**kwargs):
+        return self.request("GET",endpoint,expected_schema=expected_schema,schema_name=schema_name,auto_generate=auto_generate,**kwargs)
     
-    def post(self,endpoint,data=None,json=None,expected_schema=None,schema_name=None,**kwargs):
-        return self.request("POST",endpoint,expected_schema=expected_schema,data=data,json=json,schema_name=schema_name,**kwargs)
+    def post(self,endpoint,data=None,json=None,expected_schema=None,schema_name=None, auto_generate=False,**kwargs):
+        return self.request("POST",endpoint,expected_schema=expected_schema,data=data,json=json,schema_name=schema_name,auto_generate=auto_generate,**kwargs)
     
-    def delete(self,endpoint,expected_schema=None,schema_name=None,**kwargs):
-        return self.request("DELETE",endpoint,expected_schema=expected_schema,schema_name=schema_name,**kwargs)
+    def delete(self,endpoint,expected_schema=None,schema_name=None, auto_generate=False,**kwargs):
+        return self.request("DELETE",endpoint,expected_schema=expected_schema,schema_name=schema_name,auto_generate=auto_generate,**kwargs)
     
-    def patch(self,endpoint,data=None,expected_schema=None,schema_name=None,**kwargs):
-        return self.request("PATCH",endpoint,expected_schema=expected_schema,data=data,schema_name=schema_name,**kwargs)
+    def patch(self,endpoint,data=None,expected_schema=None,schema_name=None, auto_generate=False,**kwargs):
+        return self.request("PATCH",endpoint,expected_schema=expected_schema,data=data,schema_name=schema_name,auto_generate=auto_generate,**kwargs)
     
-    def put(self,endpoint,data=None,expected_schema=None,schema_name=None,**kwargs):
-        return self.request("PUT",endpoint,expected_schema=expected_schema,data=data,schema_name=schema_name,**kwargs)
+    def put(self,endpoint,data=None,expected_schema=None,schema_name=None, auto_generate=False,**kwargs):
+        return self.request("PUT",endpoint,expected_schema=expected_schema,data=data,schema_name=schema_name,auto_generate=auto_generate,**kwargs)
         
 
     
