@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 from utilities.logger import get_logger
 
-logger = get_logger()
+logger = get_logger(__name__)
 
 class SchemaGenerator:
     def generate_schema(self, actual_data):

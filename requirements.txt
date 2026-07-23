@@ -2,3 +2,4 @@ pytest
 requests
 PyYAML
 pytest-html
+allure-pytest

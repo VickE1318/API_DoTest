@@ -3,8 +3,9 @@ from utilities.logger import get_logger
 from validators.schema_validator import SchemaValidator
 from utilities.schema_loader import load_schema,schema_exists
 from generators.schema_generator import SchemaGenerator
+from utilities.allure_helper import *
 
-logger = get_logger()
+logger = get_logger(__name__)
 
 class APIClient:
 
@@ -30,14 +31,17 @@ class APIClient:
         if not endpoint.startswith('/'):
             endpoint = '/' + endpoint
         url = self.base_url + endpoint
+        attach_request(method,url)
         logger.info(f"{method} request to {url}")
         try:
             response = self.session.request(method=method, url=url, **kwargs)
+            attach_response(response.status_code, response.json(), headers=None)
             response.raise_for_status()
             logger.info(f"Status Code: {response.status_code}")
             content_type = response.headers.get("Content-Type", "")
             if "application/json" in content_type:
                 actual_json = response.json()
+                attach_json("Response Body", actual_json)
                 self.validate_response(actual_json=actual_json,expected_schema=expected_schema, schema_name=schema_name,auto_generate=auto_generate)
             else:
                 logger.warning("Schema validation skipped. Reason: Response is not JSON.")
@@ -60,11 +64,13 @@ class APIClient:
     def validate_response(self, actual_json, expected_schema, auto_generate,schema_name):
         if expected_schema is None and auto_generate and schema_name:
             expected_schema=self.generator.generate_schema(actual_json)
+            attach_json("Generated Schema", expected_schema)
             logger.info(f"Generating baseline schema '{schema_name}'")
             self.generator.save_schema(expected_schema,schema_name)   
             logger.info(f"Baseline schema '{schema_name}' saved successfully")
         if  expected_schema is not None:
             validation_result = self.validator.validate_data(actual_json,expected_schema) 
+            attach_schema_validation(validation_result)
             if not validation_result["missing"] and not validation_result["added"] and not validation_result["type_changes"]:
                 logger.info("Schema validation passed")
             else:

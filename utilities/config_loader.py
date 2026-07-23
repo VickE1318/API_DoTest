@@ -2,7 +2,7 @@ import yaml
 from typing import Any
 from utilities.logger import get_logger
 
-logger = get_logger()
+logger = get_logger(__name__)
 
 def load_config(config_path: str) -> dict[str,Any]:
     try:

@@ -3,7 +3,7 @@ from typing import Any
 from utilities.logger import get_logger
 from pathlib import Path
 
-logger = get_logger()
+logger = get_logger(__name__)
 
 def load_schema(schema_name: str) -> dict[str,Any]:
     try:
