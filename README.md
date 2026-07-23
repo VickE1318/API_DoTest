@@ -204,6 +204,8 @@ The framework supports:
 
 ![Log](screenshots/log.png)
 
+![Pytest Report](screenshots/pytest_report.png)
+
 ---
 
 ## Future Enhancements

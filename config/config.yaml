@@ -1,12 +1,12 @@
 ---
 
-environment: qa
+environment: qa #Choose the test environment
 
 environments:
  dev:
   base_url:
  qa:
-  base_url: https://jsonplaceholder.typicode.com/
+  base_url: https://jsonplaceholder.typicode.com/ #Replace with proper URL
  uat:
   base_url:
 
