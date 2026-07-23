@@ -1,12 +1,12 @@
 ---
 
-environment:
+environment: qa
 
 environments:
  dev:
   base_url:
  qa:
-  base_url:
+  base_url: https://jsonplaceholder.typicode.com/
  uat:
   base_url:
 
